@@ -93,7 +93,6 @@
             <button class="btn btn-blue" onclick="startQuiz('full')">完整版 (40题)</button>
         </div>
         <div class="rank-btn-container">
-            <!-- 恢复：不再禁用排行榜按钮，允许未答题用户查看 -->
             <button class="btn btn-outline" onclick="showRankingDirectly()">查看排行榜</button>
         </div>
     </div>
@@ -134,7 +133,6 @@
 
 <script> 
     // 彩蛋：yours()解锁答案
-    // 【关键检查】确认你的Render后端URL正确！
     const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
 
     const qData = [
@@ -182,10 +180,13 @@
 
     let currentSet = [];
     let finalScore = 0; 
-    let hasAnswered = false; // 仅用于标记是否答题（不限制排行榜查看）
+    let hasAnswered = false;
+    // 标记是否已发送「开始答卷」数据（避免重复发送）
+    let hasReportedStart = false;
 
+    // 【关键修改1】移除页面加载时的loadRanking()，避免打开页面就请求排行榜
     window.onload = function() {
-        loadRanking(); // 页面加载就加载排行榜
+        // 空函数，仅初始化，不发送任何请求
     };
 
     function safeAtob(str) {
@@ -196,6 +197,7 @@
         }
     }
 
+    // 【关键修改2】开始答题时发送「开始答卷」数据
     function startQuiz(mode) {
         const id = document.getElementById('user-id').value;
         if (!id.trim()) { 
@@ -203,6 +205,28 @@
             return; 
         }
         localStorage.setItem('quiz_user_id', id);
+        
+        // 发送「开始答卷」数据（仅发送一次）
+        if (!hasReportedStart) {
+            console.log("发送「开始答卷」数据：", { user_id: id, action: "start_quiz", mode: mode });
+            fetch(`${API_BASE}/report-action`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ 
+                    user_id: id, 
+                    action: "start_quiz", // 标记操作类型：开始答卷
+                    mode: mode // brief/full
+                }),
+                cache: 'no-cache'
+            })
+            .then(res => res.json())
+            .then(data => console.log("开始答卷上报成功：", data))
+            .catch(err => console.error("开始答卷上报失败：", err));
+            hasReportedStart = true;
+        }
         
         document.getElementById('top-title').innerText = "加载中...";
         document.getElementById('auth-section').classList.add('hidden');
@@ -231,7 +255,7 @@
         document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
     }
 
-    // 核心：修复数据提交逻辑，增加详细日志
+    // 【关键修改3】完成答卷时发送「完卷」数据（仅记录，不上榜）
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
@@ -252,39 +276,34 @@
         }
 
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
-        hasAnswered = true; // 标记用户已答题
+        hasAnswered = true;
 
-        // 静默提交：仅后台记录（is_public=false）
+        // 发送「完成答卷」数据
         const userId = localStorage.getItem('quiz_user_id');
         if (userId) {
-            console.log("开始静默提交数据：", { user_id: userId, score: finalScore, is_public: false });
-            // 【关键修复】增加完整的请求错误处理，打印详细日志
-            fetch(`${API_BASE}/submit`, {
+            console.log("发送「完成答卷」数据：", { user_id: userId, action: "finish_quiz", score: finalScore });
+            fetch(`${API_BASE}/report-action`, {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
-                    // 解决跨域/预检请求问题
                     'Access-Control-Allow-Origin': '*'
                 },
                 body: JSON.stringify({ 
                     user_id: userId, 
-                    score: finalScore, 
-                    is_public: false 
+                    action: "finish_quiz", // 标记操作类型：完成答卷
+                    score: finalScore,
+                    is_public: false // 仅记录，不上榜
                 }),
-                // 强制不缓存
                 cache: 'no-cache'
             })
-            .then(res => {
-                console.log("响应状态：", res.status, res.statusText);
-                return res.json();
-            })
+            .then(res => res.json())
             .then(data => {
-                console.log("静默提交成功：", data);
+                console.log("完成答卷上报成功：", data);
                 alert("答案提交成功！（后台已记录分数）");
             })
             .catch(err => {
-                console.error("静默提交失败：", err);
-                alert(`提交失败：${err.message}，请检查后端是否在线！`);
+                console.error("完成答卷上报失败：", err);
+                alert(`提交失败：${err.message}，请检查网络！`);
             });
         } else {
             alert("用户ID丢失，请重新输入ID！");
@@ -319,10 +338,11 @@
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
 
+        // 加载排行榜（仅获取数据，不提交数据）
         loadRanking();
     }
 
-    // 恢复：允许未答题用户查看排行榜
+    // 【关键修改4】查看排行榜仅加载数据，不提交任何数据
     function showRankingDirectly() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
@@ -331,10 +351,11 @@
         document.getElementById('score-display').style.borderColor = "var(--google-yellow)";
         document.getElementById('score-display').style.color = "var(--google-yellow)";
         document.getElementById('result-text').innerText = "come on";
+        // 仅加载排行榜数据，不发送任何提交请求
         loadRanking();
     }
 
-    // 修复手动上榜功能，增加详细日志
+    // 【关键修改5】手动上榜时发送「上榜」数据
     function submitToRanking() {
         const rankUserId = document.getElementById('rank-user-id').value;
         const btn = document.getElementById('submit-rank-btn');
@@ -355,7 +376,7 @@
         btn.disabled = true;
         btn.innerText = "提交中...";
 
-        console.log("开始手动上榜提交：", { user_id: rankUserId, score: finalScore, is_public: true });
+        console.log("发送「手动上榜」数据：", { user_id: rankUserId, action: "submit_rank", score: finalScore });
         fetch(`${API_BASE}/submit`, {
             method: 'POST',
             headers: { 
@@ -365,14 +386,12 @@
             body: JSON.stringify({ 
                 user_id: rankUserId, 
                 score: finalScore, 
-                is_public: true 
+                is_public: true, // 标记为上榜
+                action: "submit_rank" // 标记操作类型：手动上榜
             }),
             cache: 'no-cache'
         })
-        .then(res => {
-            console.log("上榜响应状态：", res.status, res.statusText);
-            return res.json();
-        })
+        .then(res => res.json())
         .then(data => {
             if (data.success) {
                 alert("成功进入排行榜！");
@@ -383,7 +402,7 @@
         })
         .catch(err => {
             console.error("上榜提交失败：", err);
-            alert(`上榜失败：${err.message}，请检查后端是否在线！`);
+            alert(`上榜失败：${err.message}，请检查网络！`);
         })
         .finally(() => {
             btn.disabled = false;
@@ -391,6 +410,7 @@
         });
     }
 
+    // 仅加载排行榜数据，不提交任何数据
     function loadRanking() {
         fetch(`${API_BASE}/ranking`, {
             cache: 'no-cache',
@@ -403,7 +423,7 @@
                 return res.json();
             })
             .then(data => {
-                console.log("排行榜数据：", data);
+                console.log("加载排行榜数据：", data);
                 let html = '';
                 if (!Array.isArray(data) || data.length === 0) {
                     html = "<p>暂无上榜分数</p>";
