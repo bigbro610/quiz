@@ -71,7 +71,6 @@
 
         .rank-section { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
         .hidden { display: none; }
-        
         .status-tag { font-size: 12px; color: #888; margin: 10px 0; font-style: italic; }
     </style>
 </head>
@@ -103,20 +102,18 @@
         <div class="score-circle" id="score-display">0%</div>
         <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
         
-        <div id="sync-status" class="status-tag">正在同步数据到日志...</div>
+        <div id="sync-status" class="status-tag">正在同步数据...</div>
 
         <div class="rank-section">
             <h3>🏆 实时分数排行榜</h3>
-            <input type="text" id="rank-user-id" placeholder="ID" style="padding: 8px; width: 120px; border: 1px solid #ccc; border-radius: 4px;">
-            <button id="submit-rank-btn" class="btn btn-blue" onclick="submitToRanking()">手动再次上榜</button>
-            <div id="rank_list" style="margin-top: 15px;">加载中...</div>
+            <div id="rank_list">加载中...</div>
         </div>
         
         <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
     </div>
 </div>
 
-<script>     // 彩蛋：输入yours()查看我的答案
+<script> // 彩蛋：控制台输入 yours()
     const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
 
     const qData = [
@@ -169,6 +166,7 @@
         const savedId = localStorage.getItem('quiz_user_id');
         if (savedId) document.getElementById('user-id').value = savedId;
         loadRanking();
+        startHeartbeat(); // 启动防休眠心跳
     };
 
     function safeAtob(str) {
@@ -176,14 +174,26 @@
         catch (e) { return window.atob(str).trim(); }
     }
 
+    // --- 【彩蛋回归】控制台输入 yours() 自动填充正确答案 ---
+    window.yours = function() {
+        if (currentSet.length === 0) return "❌ 尚未开始答题";
+        currentSet.forEach(item => {
+            const correctVal = safeAtob(item.a);
+            const radios = document.querySelectorAll(`input[name="${item.id}"]`);
+            radios.forEach(r => {
+                if (r.value.trim() === correctVal) r.checked = true;
+            });
+        });
+        console.log("真面目已被揭晓...");
+        return "✅ 答案已填入";
+    };
+
     function startQuiz(mode) {
         const id = document.getElementById('user-id').value.trim();
-        if (!id) { alert("输入id再开始吧🥵"); return; }
+        if (!id) { alert("输入id再开始吧"); return; }
         localStorage.setItem('quiz_user_id', id);
-        
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('quiz-section').classList.remove('hidden');
-        
         let shuffled = [...qData].sort(() => Math.random() - 0.5);
         currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
         renderQuestions();
@@ -202,11 +212,9 @@
         window.scrollTo(0, 0);
     }
 
-    // 修改：计算分数后立即发起静默提交
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
-        
         currentSet.forEach(item => {
             const sel = document.querySelector(`input[name="${item.id}"]:checked`);
             if (sel) {
@@ -214,40 +222,28 @@
                 if (sel.value === safeAtob(item.a)) scoreCount++;
             }
         });
-
         if (answeredCount < currentSet.length) {
-            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`);
+            alert(`还有 ${currentSet.length - answeredCount} 道题没写完！`);
             return;
         }
-
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
         showResult(finalScore);
-        
-        // --- 核心改动：自动同步数据 ---
-        const userId = document.getElementById('user-id').value;
-        autoSubmitData(userId, finalScore);
+        autoSubmit(document.getElementById('user-id').value, finalScore);
     }
 
     function showResult(s) {
         document.getElementById('quiz-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
-        document.getElementById('rank-user-id').value = document.getElementById('user-id').value;
-        
         const circle = document.getElementById('score-display');
-        const text = document.getElementById('result-text');
         circle.innerText = s + "%";
-        
+        const text = document.getElementById('result-text');
         if (s >= 80) text.innerText = "我们是天造地设的姐妹。";
         else if (s >= 60) text.innerText = "或许我有跟你聊过我的性癖好。";
-        else if (s >= 35) text.innerText = "我们有些不同爱好。";
-        else text.innerText = "你有很多见解与我不尽相同。";
+        else text.innerText = "我们有些不同爱好，但可以聊聊。";
     }
 
-    // 新增：静默上传函数，只要完卷就调用
-    function autoSubmitData(uid, score) {
-        console.log("📡 正在自动同步数据到后台...", { uid, score });
+    function autoSubmit(uid, score) {
         const status = document.getElementById('sync-status');
-        
         fetch(`${API_BASE}/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -256,22 +252,14 @@
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                console.log("✅ 数据同步成功");
                 status.innerText = "数据已同步至日志 ✅";
-                loadRanking(); // 自动刷新排行榜
+                loadRanking();
             }
         })
         .catch(err => {
-            console.error("❌ 自动同步失败:", err);
+            console.error("同步失败", err);
             status.innerText = "同步失败，请检查网络 ⚠️";
         });
-    }
-
-    function submitToRanking() {
-        const rankUserId = document.getElementById('rank-user-id').value;
-        if (!rankUserId) { alert("ID 呢？"); return; }
-        autoSubmitData(rankUserId, finalScore); // 复用逻辑
-        alert("尝试手动重新提交中...");
     }
 
     function loadRanking() {
@@ -279,22 +267,25 @@
             .then(res => res.json())
             .then(data => {
                 const list = document.getElementById('rank_list');
-                if (!Array.isArray(data) || data.length === 0) {
-                    list.innerHTML = "暂无数据"; return;
-                }
                 list.innerHTML = data.map((item, i) => `
                     <p style="border-bottom: 1px dashed #eee; padding: 5px 0;">
                         ${i+1}. <b>${item.user_id}</b> — ${item.score}%
                     </p>
-                `).join('');
-            })
-            .catch(e => console.error("排行加载失败", e));
+                `).join('') || "暂无数据";
+            });
     }
 
     function showRankingDirectly() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
         loadRanking();
+    }
+
+    // 防休眠：每 10 分钟踢一下后端
+    function startHeartbeat() {
+        setInterval(() => {
+            fetch(`${API_BASE}/health`).then(() => console.log("💓 Keep-alive"));
+        }, 10 * 60 * 1000);
     }
 </script>
 </body>
