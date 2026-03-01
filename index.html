@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -105,6 +107,12 @@
             <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
         </div>
         <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
+        <div id="leaderboard-section" style="margin-top: 40px; text-align: left;">
+    <h3 style="text-align: center;">🏆 排行榜</h3>
+    <ul id="leaderboard-list" style="list-style: none; padding: 0;">
+        <li style="color: #999;">正在加载排行榜...</li>
+    </ul>
+</div>
     </div>
 </div>
 
@@ -237,7 +245,26 @@
         const circle = document.getElementById('score-display');
         const text = document.getElementById('result-text');
         const userId = document.getElementById('user-id').value;
-        circle.innerText = s + "%";
+        circle.innerText = s + "%";function fetchLeaderboard() {
+    fetch('https://你的后端地址.onrender.com/leaderboard')
+        .then(res => res.json())
+        .then(data => {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = data.map((item, index) => `
+                <li style="padding: 10px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between;">
+                    <span>第 ${index + 1} 名：<b>${item.user_id}</b></span>
+                    <span style="color: var(--google-blue); font-weight: bold;">${item.score}%</span>
+                </li>
+            `).join('');
+        })
+        .catch(err => console.error("加载排行榜失败"));
+}
+
+// 在 showResult 末尾调用它
+function showResult(s) {
+    // ... 原有的代码 ...
+    fetchLeaderboard(); 
+}
         
         // 补全评价逻辑
         if (s >= 80) {
