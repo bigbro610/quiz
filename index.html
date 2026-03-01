@@ -181,13 +181,10 @@
     let currentSet = [];
     let finalScore = 0; 
 
-    window.onload = function() {
-        const savedUserId = localStorage.getItem('quiz_user_id');
-        if (savedUserId) {
-            document.getElementById('user-id').value = savedUserId;
-        }
-        loadRanking();
-    };
+   window.onload = function() {
+    // 删掉了读取和赋值 quiz_user_id 的部分
+    loadRanking(); // 只保留加载排行榜
+};
 
     function safeAtob(str) {
         try {
@@ -252,6 +249,40 @@
         }
 
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
+        showResult(finalScore);
+    }function calculateScore() {
+        let scoreCount = 0;
+        let answeredCount = 0;
+        
+        currentSet.forEach(item => {
+            const sel = document.querySelector(`input[name="${item.id}"]:checked`);
+            if (sel) {
+                answeredCount++;
+                if (sel.value === safeAtob(item.a)) {
+                    scoreCount++;
+                }
+            }
+        });
+
+        if (answeredCount < currentSet.length) { 
+            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
+            return; 
+        }
+
+        finalScore = Math.round((scoreCount / currentSet.length) * 100);
+
+        // 👇【这里是新增的代码：静默自动提交】👇
+        const userId = document.getElementById('user-id').value;
+        fetch(`${API_BASE}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, score: finalScore })
+        }).catch(err => {
+            // 静默提交失败不弹窗，以免影响用户体验
+            console.log("后台自动记录失败:", err);
+        });
+        // 👆【新增结束】👆
+
         showResult(finalScore);
     }
 
@@ -370,4 +401,3 @@
 </script>
 </body>
 </html>
-
