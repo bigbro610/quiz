@@ -284,6 +284,15 @@
         const text = document.getElementById('result-text');
         const userId = document.getElementById('user-id').value;
         circle.innerText = s + "%";
+        function showResult(s) {
+    // ... 原有代码 ...
+    
+    // 【新增建议】自动把开始时的 ID 填到排行榜上榜框里
+    const startId = document.getElementById('user-id').value;
+    document.getElementById('rank-user-id').value = startId;
+
+    loadRanking();
+}
         
         // 根据分数显示不同评价
         if (s >= 80) {
@@ -392,3 +401,4 @@
 </script>
 </body>
 </html>
+
