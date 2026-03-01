@@ -231,16 +231,25 @@
         autoSubmit(document.getElementById('user-id').value, finalScore);
     }
 
-    function showResult(s) {
-        document.getElementById('quiz-section').classList.add('hidden');
-        document.getElementById('result').style.display = 'block';
-        const circle = document.getElementById('score-display');
-        circle.innerText = s + "%";
-        const text = document.getElementById('result-text');
-        if (s >= 80) text.innerText = "我们是天造地设的姐妹。";
-        else if (s >= 60) text.innerText = "或许我有跟你聊过我的性癖好。";
-        else text.innerText = "我们有些不同爱好，但可以聊聊。";
-    }
+    // 根据分数显示不同评价
+        if (s >= 80) {
+            circle.style.borderColor = "var(--google-blue)"; 
+            circle.style.color = "var(--google-blue)";
+            text.innerText = `${userId}，我们是天造地设的姐妹。`;
+        } else if (s >= 60) {
+            circle.style.borderColor = "var(--google-green)"; 
+            circle.style.color = "var(--google-green)";
+            text.innerText = `${userId}，或许我有跟你聊过我的性癖好。当然，你现在也能问。`;
+        } else if (s >= 35) {
+            circle.style.borderColor = "var(--google-yellow)"; 
+            circle.style.color = "var(--google-yellow)";
+            text.innerText = `${userId}，我们可能有些不同爱好。如果你有兴趣，我们可以聊聊。`;
+        } else {
+            circle.style.borderColor = "var(--google-red)"; 
+            circle.style.color = "var(--google-red)";
+            text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
+        }
+
 
     function autoSubmit(uid, score) {
         const status = document.getElementById('sync-status');
@@ -290,3 +299,4 @@
 </script>
 </body>
 </html>
+
