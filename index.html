@@ -132,7 +132,7 @@
 </div>
 
 <script> 
-    // 配置：你的后端 Render 地址
+    // 彩蛋：yours()解锁答案
     const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
 
     const qData = [
@@ -292,7 +292,7 @@
         document.getElementById('score-display').innerText = "🏆";
         document.getElementById('score-display').style.borderColor = "var(--google-yellow)";
         document.getElementById('score-display').style.color = "var(--google-yellow)";
-        document.getElementById('result-text').innerText = "快来参与答题，上榜赢取默契值～";
+        document.getElementById('result-text').innerText = "come on";
         loadRanking();
     }
 
@@ -340,7 +340,7 @@
             .then(data => {
                 let html = '';
                 if (!Array.isArray(data) || data.length === 0) {
-                    html = "<p>暂无上榜分数，快来成为第一个吧！</p>";
+                    html = "<p>暂无上榜分数</p>";
                 } else {
                     data.forEach((item, i) => {
                         html += `<p style="margin: 8px 0; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">
@@ -370,3 +370,4 @@
 </script>
 </body>
 </html>
+
