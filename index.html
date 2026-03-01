@@ -91,21 +91,22 @@
         <form id="quiz-form">
             <div id="questions-container"></div>
             <button type="button" class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="calculateScore()">提交我的答案</button>
-            <!-- 加在这里：用户输ID的输入框 -->
-<div style="margin: 20px 0;">
-  <input 
-    type="text" 
-    id="user_id" 
-    placeholder="请输入你的ID（用于上榜）"
-    style="padding: 8px; width: 200px;"
-  >
-</div>
+            
+            <!-- 用户输ID的输入框（用于上榜） -->
+            <div style="margin: 20px 0;">
+              <input 
+                type="text" 
+                id="rank-user-id" 
+                placeholder="请输入你的ID（用于上榜）"
+                style="padding: 8px; width: 200px;"
+              >
+            </div>
 
-<!-- 排行榜展示区域 -->
-<div id="ranking" style="margin-top: 30px;">
-  <h3>🏆 实时分数排行榜</h3>
-  <div id="rank_list"></div>
-</div>
+            <!-- 排行榜展示区域 -->
+            <div id="ranking" style="margin-top: 30px;">
+              <h3>🏆 实时分数排行榜</h3>
+              <div id="rank_list"></div>
+            </div>
         </form>
     </div>
 
@@ -123,7 +124,7 @@
     </div>
 </div>
 
-<script> // 输入yours()查看我的回答
+<script> 
     const qData = [
         { id: "q1", q: "奥利奥还是趣多多？", opts: ["奥利奥", "趣多多"], a: "6Laj5aSa5aSa" },
         { id: "q2", q: "穿三角还是平角？", opts: ["三角", "平角"], a: "5LiJ6KeS" },
@@ -169,6 +170,7 @@
 
     let currentSet = [];
 
+    // 修复Base64解码函数
     function safeAtob(str) {
         try {
             return decodeURIComponent(escape(window.atob(str))).trim(); 
@@ -177,6 +179,7 @@
         }
     }
 
+    // 开始测试函数（恢复正常）
     function startQuiz(mode) {
         const id = document.getElementById('user-id').value;
         if (!id.trim()) { alert("必须输入 ID 才能开始哦"); return; }
@@ -187,8 +190,11 @@
         let shuffled = [...qData].sort(() => Math.random() - 0.5);
         currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
         render();
+        // 打开问卷后自动加载排行榜
+        loadRanking();
     }
 
+    // 渲染题目函数
     function render() {
         const container = document.getElementById('questions-container');
         container.innerHTML = "";
@@ -204,8 +210,10 @@
             container.appendChild(card);
         });
         window.scrollTo(0, 0);
+        document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
     }
 
+    // 计算分数+提交排行榜函数（核心修复）
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
@@ -226,26 +234,40 @@
 
         const finalScore = Math.round((scoreCount / currentSet.length) * 100);
         
+        // 1. 获取上榜用的ID
+        const rankUserId = document.getElementById('rank-user-id').value;
+        // 如果用户填了上榜ID，就提交到后端
+        if (rankUserId) {
+            fetch('https://da-di-quizhou-duan.onrender.com/submit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: rankUserId, score: finalScore })
+            }).then(() => {
+                // 提交后刷新排行榜
+                loadRanking();
+            }).catch(err => {
+                console.log("排行榜提交失败：", err);
+                alert("分数上榜失败，但不影响结果展示～");
+            });
+        }
+
+        // 2. 原来的上报逻辑保留（不影响）
         const payload = {
             userId: document.getElementById('user-id').value,
             score: finalScore + "%",
             mode: currentSet.length === 20 ? "简略版" : "完整版"
         };
-
-        // 核心纠错：确保 URL 正确，且路径包含了 /submit-score
         fetch('https://da-di-quizhou-duan.onrender.com/submit-score', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        })
-        .then(response => {
-            if (response.ok) console.log("大帝后端已收到数据");
-        })
-        .catch(error => console.error("上报失败:", error));
+        }).catch(error => console.error("上报失败:", error));
 
+        // 3. 显示结果
         showResult(finalScore);
     }
 
+    // 显示结果函数
     function showResult(s) {
         document.getElementById('quiz-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
@@ -254,7 +276,6 @@
         const userId = document.getElementById('user-id').value;
         circle.innerText = s + "%";
         
-        // 补全评价逻辑
         if (s >= 80) {
             circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
             text.innerText = `${userId}，我们是天造地设的姐妹。`;
@@ -269,42 +290,27 @@
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
     }
-// 假设你算完总分是：totalScore
-// 找到你显示分数的地方，在后面加这一段
 
-const userId = document.getElementById('user_id').value;
-if (!userId) {
-  alert('请先输入ID再上榜！');
-  return;
-}
+    // 加载排行榜函数（移到正确位置，仅在需要时执行）
+    function loadRanking() {
+        fetch('https://da-di-quizhou-duan.onrender.com/ranking')
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                if (data.length === 0) {
+                    html = "<p>暂无上榜分数，快来成为第一个吧！</p>";
+                } else {
+                    data.forEach((item, i) => {
+                        html += `<p>${i+1}. ${item.user_id} — ${item.score}分</p>`;
+                    });
+                }
+                document.getElementById('rank_list').innerHTML = html;
+            }).catch(err => {
+                document.getElementById('rank_list').innerHTML = "<p>排行榜加载失败～</p>";
+            });
+    }
 
-// 提交分数到后端
-fetch('https://da-di-quizhou-duan.onrender.com/submit', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ user_id: userId, score: totalScore })
-}).then(() => {
-  // 提交后立刻刷新排行榜
-  loadRanking();
-});
-
-// 加载排行榜
-function loadRanking() {
-  fetch('https://da-di-quizhou-duan.onrender.com/ranking')
-    .then(res => res.json())
-    .then(data => {
-      let html = '';
-      data.forEach((item, i) => {
-        html += `<p>${i+1}. ${item.user_id} — ${item.score}分</p>`;
-      });
-      document.getElementById('rank_list').innerHTML = html;
-    });
-}
-
-// 页面一打开就加载排行
-window.onload = loadRanking;
-    
-    // 彩蛋逻辑
+    // 彩蛋函数
     window.yours = function() {
         if (currentSet.length === 0) return "❌ 尚未开始";
         currentSet.forEach(item => {
@@ -320,4 +326,3 @@ window.onload = loadRanking;
 </script>
 </body>
 </html>
-
