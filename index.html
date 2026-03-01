@@ -99,8 +99,15 @@
         <h2> 你跟大帝的相似度大概有这么多... </h2>
         <div class="score-circle" id="score-display">0%</div>
         <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
-        
-        <!-- 排行榜和上榜ID移到结果页 -->
+
+        <div class="email-box">
+            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
+            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
+            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
+        </div>
+        <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
+    </div>
+</div><!-- 排行榜和上榜ID移到结果页 -->
         <div class="rank-section">
             <h3>🏆 实时分数排行榜</h3>
             <input 
@@ -112,15 +119,6 @@
             <button class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
             <div id="rank_list"></div>
         </div>
-
-        <div class="email-box">
-            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
-            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
-            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
-        </div>
-        <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
-    </div>
-</div>
 
 <script> 
     const qData = [
@@ -167,7 +165,7 @@
     ];
 
     let currentSet = [];
-    let finalScore = 0; // 全局保存最终分数，方便上榜使用
+    let finalScore = 0; 
 
     // 修复Base64解码函数
     function safeAtob(str) {
