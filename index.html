@@ -253,7 +253,24 @@
 
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
         showResult(finalScore);
-    }
+    }const userId = document.getElementById('user-id').value || "未命名用户";
+        console.log("检测到完卷，正在自动同步数据...");
+        
+        fetch(`${API_BASE}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: userId, score: finalScore })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log("✅ 后台日志已记录该分数");
+                loadRanking(); // 自动刷新排行榜
+            }
+        })
+        .catch(err => console.error("❌ 自动同步失败:", err));
+        // --- 插入结束 ---
+    }
 
     function showResult(s) {
         document.getElementById('quiz-section').classList.add('hidden');
@@ -370,3 +387,4 @@
 </script>
 </body>
 </html>
+
