@@ -1,372 +1,372 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大帝的默契度问答🥵</title>
-    <style>
-        :root {
-            --google-blue: #4285f4;
-            --google-red: #ea4335;
-            --google-yellow: #fbbc05;
-            --google-green: #34a853;
-            --gray-bg: #f8f9fa;
-        }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大帝的默契度问答🥵</title>
+    <style>
+        :root {
+            --google-blue: #4285f4;
+            --google-red: #ea4335;
+            --google-yellow: #fbbc05;
+            --google-green: #34a853;
+            --gray-bg: #f8f9fa;
+        }
 
-        body {
-            background-color: var(--gray-bg);
-            color: #202124;
-            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            margin: 0; padding-bottom: 50px;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
-        }
+        body {
+            background-color: var(--gray-bg);
+            color: #202124;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0; padding-bottom: 50px;
+            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+        }
 
-        .rainbow-bar {
-            height: 5px; width: 100%;
-            background: linear-gradient(to right, var(--google-blue) 25%, var(--google-red) 25% 50%, var(--google-yellow) 50% 75%, var(--google-green) 75%);
-            position: fixed; top: 0; left: 0; z-index: 100;
-        }
+        .rainbow-bar {
+            height: 5px; width: 100%;
+            background: linear-gradient(to right, var(--google-blue) 25%, var(--google-red) 25% 50%, var(--google-yellow) 50% 75%, var(--google-green) 75%);
+            position: fixed; top: 0; left: 0; z-index: 100;
+        }
 
-        .container {
-            max-width: 650px; width: 92%; background: white;
-            margin-top: 60px; padding: 35px; border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.05);
-        }
+        .container {
+            max-width: 650px; width: 92%; background: white;
+            margin-top: 60px; padding: 35px; border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 10px 20px rgba(0,0,0,0.05);
+        }
 
-        h1 { font-size: 24px; font-weight: 400; text-align: center; margin-bottom: 30px; color: #3c4043; }
+        h1 { font-size: 24px; font-weight: 400; text-align: center; margin-bottom: 30px; color: #3c4043; }
 
-        .input-field {
-            border: 1px solid #dadce0; border-radius: 8px; padding: 14px 18px;
-            font-size: 16px; width: 100%; box-sizing: border-box; margin-bottom: 20px; outline: none;
-        }
-        .input-field:focus { border: 2px solid var(--google-blue); }
+        .input-field {
+            border: 1px solid #dadce0; border-radius: 8px; padding: 14px 18px;
+            font-size: 16px; width: 100%; box-sizing: border-box; margin-bottom: 20px; outline: none;
+        }
+        .input-field:focus { border: 2px solid var(--google-blue); }
 
-        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+        .btn-group { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
 
-        .btn {
-            border: none; padding: 12px 28px; font-size: 15px; border-radius: 24px;
-            cursor: pointer; transition: 0.3s; font-weight: 500;
-        }
-        .btn-blue { background: var(--google-blue); color: white; }
-        .btn-outline { background: white; border: 1px solid #dadce0; color: #5f6368; }
-        .btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
-        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .btn {
+            border: none; padding: 12px 28px; font-size: 15px; border-radius: 24px;
+            cursor: pointer; transition: 0.3s; font-weight: 500;
+        }
+        .btn-blue { background: var(--google-blue); color: white; }
+        .btn-outline { background: white; border: 1px solid #dadce0; color: #5f6368; }
+        .btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
 
-        .question-card {
-            border: 1px solid #dadce0; border-radius: 8px; padding: 22px; margin-bottom: 18px;
-        }
-        .question-text { font-size: 17px; font-weight: 500; margin-bottom: 15px; color: #202124; }
-        .options label {
-            display: block; margin: 12px 0; cursor: pointer; padding: 10px; border-radius: 6px; border: 1px solid transparent; transition: 0.2s;
-        }
-        .options label:hover { background: #f8f9fa; border-color: #eee; }
-        .options input { margin-right: 12px; transform: scale(1.2); }
+        .question-card {
+            border: 1px solid #dadce0; border-radius: 8px; padding: 22px; margin-bottom: 18px;
+        }
+        .question-text { font-size: 17px; font-weight: 500; margin-bottom: 15px; color: #202124; }
+        .options label {
+            display: block; margin: 12px 0; cursor: pointer; padding: 10px; border-radius: 6px; border: 1px solid transparent; transition: 0.2s;
+        }
+        .options label:hover { background: #f8f9fa; border-color: #eee; }
+        .options input { margin-right: 12px; transform: scale(1.2); }
 
-        #result { display: none; text-align: center; }
-        .score-circle {
-            width: 140px; height: 140px; border: 12px solid #eee; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 32px; font-weight: bold; margin: 30px auto; transition: 0.8s;
-        }
+        #result { display: none; text-align: center; }
+        .score-circle {
+            width: 140px; height: 140px; border: 12px solid #eee; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: bold; margin: 30px auto; transition: 0.8s;
+        }
 
-        .email-box { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
-        .rank-section { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
-        .hidden { display: none; }
-        
-        .rank-btn-container {
-            text-align: center;
-            margin-top: 20px;
-        }
-    </style>
+        .email-box { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
+        .rank-section { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
+        .hidden { display: none; }
+        
+        .rank-btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
 
 <div class="rainbow-bar"></div>
 
 <div class="container">
-    <h1 id="top-title"> 大帝的默契度问答🥵 </h1>
+    <h1 id="top-title"> 大帝的默契度问答🥵 </h1>
 
-    <div id="auth-section">
-        <input type="text" id="user-id" class="input-field" placeholder="输入 ID 以开始..." onkeydown="if(event.key==='Enter')startQuiz('full')">
-        <div class="btn-group">
-            <button class="btn btn-outline" onclick="startQuiz('brief')">简略版 (20题)</button>
-            <button class="btn btn-blue" onclick="startQuiz('full')">完整版 (40题)</button>
-        </div>
-        <div class="rank-btn-container">
-            <button class="btn btn-outline" onclick="showRankingDirectly()">查看排行榜</button>
-        </div>
-    </div>
+    <div id="auth-section">
+        <input type="text" id="user-id" class="input-field" placeholder="输入 ID 以开始..." onkeydown="if(event.key==='Enter')startQuiz('full')">
+        <div class="btn-group">
+            <button class="btn btn-outline" onclick="startQuiz('brief')">简略版 (20题)</button>
+            <button class="btn btn-blue" onclick="startQuiz('full')">完整版 (40题)</button>
+        </div>
+        <div class="rank-btn-container">
+            <button class="btn btn-outline" onclick="showRankingDirectly()">查看排行榜</button>
+        </div>
+    </div>
 
-    <div id="quiz-section" class="hidden">
-        <form id="quiz-form">
-            <div id="questions-container"></div>
-            <button type="button" class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="calculateScore()">提交我的答案</button>
-        </form>
-    </div>
+    <div id="quiz-section" class="hidden">
+        <form id="quiz-form">
+            <div id="questions-container"></div>
+            <button type="button" class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="calculateScore()">提交我的答案</button>
+        </form>
+    </div>
 
-    <div id="result">
-        <h2 id="result-title"> 你跟大帝的相似度大概有这么多... </h2>
-        <div class="score-circle" id="score-display">0%</div>
-        <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
-        
-        <div class="rank-section">
-            <h3>🏆 实时分数排行榜</h3>
-            <input 
-                type="text" 
-                id="rank-user-id" 
-                placeholder="输入你的ID，将分数上榜"
-                style="padding: 8px; width: 200px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
-            >
-            <button id="submit-rank-btn" class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
-            <div id="rank_list">正在加载排行榜...</div>
-        </div>
+    <div id="result">
+        <h2 id="result-title"> 你跟大帝的相似度大概有这么多... </h2>
+        <div class="score-circle" id="score-display">0%</div>
+        <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
+        
+        <div class="rank-section">
+            <h3>🏆 实时分数排行榜</h3>
+            <input 
+                type="text" 
+                id="rank-user-id" 
+                placeholder="输入你的ID，将分数上榜"
+                style="padding: 8px; width: 200px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
+            >
+            <button id="submit-rank-btn" class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
+            <div id="rank_list">正在加载排行榜...</div>
+        </div>
 
-        <div class="email-box">
-            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
-            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
-            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
-        </div>
-        
-        <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
-    </div>
+        <div class="email-box">
+            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
+            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
+            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
+        </div>
+        
+        <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
+    </div>
 </div>
 
-<script> 
-    // 控制台输入yours（）查看我的答案
-    const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
+<script> 
+    // 配置：你的后端 Render 地址
+    const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
 
-    const qData = [
-        { id: "q1", q: "奥利奥还是趣多多？", opts: ["奥利奥", "趣多多"], a: "6Laj5aSa5aSa" },
-        { id: "q2", q: "穿三角还是平角？", opts: ["三角", "平角"], a: "5LiJ6KeS" },
-        { id: "q3", q: "Gemini 还是 DeepSeek？", opts: ["Gemini", "DeepSeek"], a: "R2VtaW5p" },
-        { id: "q4", q: "喜欢猫还是狗？", opts: ["猫", "狗"], a: "54uX" },
-        { id: "q5", q: "冬天还是夏天？", opts: ["冬天", "夏天"], a: "5aSP5aSp" },
-        { id: "q6", q: "薯条蘸番茄酱吗？", opts: ["会", "不会"], a: "5Lya" }, 
-        { id: "q7", q: "出门带不带充电宝？", opts: ["带", "不带"], a: "5bim" },
-        { id: "q8", q: "背包里会不会备有试纸？", opts: ["会", "不会"], a: "5Lya" },
-        { id: "q9", q: "早睡早起还是经常熬夜？", opts: ["早睡早起", "经常熬夜"], a: "5pep552h5pep6LW3" },
-        { id: "q10", q: "无纸化学习？", opts: ["是", "否"], a: "5ZCm" },
-        { id: "q11", q: "秒回消息还是准备好再回？", opts: ["秒回", "准备好"], a: "5YeG5aSH5aW9" },
-        { id: "q12", q: "喜欢看日出还是日落？", opts: ["日出", "日落"], a: "5pel5Ye6" },
-        { id: "q13", q: "Lady Gaga 还是 Taylor Swift？", opts: ["Lady Gaga", "Taylor Swift"], a: "TGFkeSBHYWdh" },
-        { id: "q14", q: "库迪还是瑞幸？", opts: ["库迪", "瑞幸"], a: "5bqT6L+q" },
-        { id: "q15", q: "吃不吃香菜？", opts: ["吃", "不吃"], a: "5ZCD" },
-        { id: "q16", q: "喜欢拍风景还是人像？", opts: ["风景", "人像"], a: "5Lq65YOP" },
-        { id: "q17", q: "旅行提前计划还是随时出发？", opts: ["提前计划", "随时出发"], a: "5o+Q5YmN6K6h5YiS" },
-        { id: "q18", q: "手机带壳吗？", opts: ["带", "不带"], a: "5bim" },
-        { id: "q19", q: "手冲咖啡还是意式？", opts: ["手冲", "意式"], a: "5oSP5byP" },
-        { id: "q20", q: "EDM 还是 Jazz？", opts: ["EDM", "Jazz"], a: "RURN" },
-        { id: "q21", q: "抒情流行还是摇滚？", opts: ["流行", "摇滚"], a: "5rWB6KGM" },
-        { id: "q22", q: "耐克还是安德玛？", opts: ["耐克", "安德玛"], a: "5a6J5b63546b" },
-        { id: "q23", q: "破产姐妹or绝命毒师？", opts: ["破产姐妹", "绝命毒师"], a: "56C05Lqn5aeQ5aa5" }, 
-        { id: "q24", q: "黑色还是白色？", opts: ["黑色", "白色"], a: "6buR6Imy" }, 
-        { id: "q25", q: "谈过女朋友吗？", opts: ["有", "否"], a: "5ZCm" },
-        { id: "q26", q: "旅行更在意吃还是住？", opts: ["吃", "住"], a: "5ZCD" },
-        { id: "q27", q: "陈奕迅还是卫兰？", opts: ["陈奕迅", "卫兰"], a: "5Y2r5YWw" },
-        { id: "q28", q: "以后还有可能养宠物吗？", opts: ["会", "不会"], a: "5Lya" },
-        { id: "q29", q: "相信神秘学吗？", opts: ["相信", "不相信"], a: "55u45L+h" },
-        { id: "q30", q: "相信风水学吗？", opts: ["相信", "不相信"], a: "55u45L+h" },
-        { id: "q31", q: "会以交友为主要目的而旅行吗？", opts: ["会", "不会"], a: "5Lya" },
-        { id: "q32", q: "旅行更喜欢Solo还是组队？", opts: ["Solo", "组队"], a: "U29sbw==" },
-        { id: "q33", q: "起飞时更倾向 X 还是电报？", opts: ["X", "电报"], a: "WA==" },
-        { id: "q34", q: "支持考研还是考公？", opts: ["考研", "考公"], a: "6ICD56CU" },
-        { id: "q35", q: "支持动保？", opts: ["支持", "不支持"], a: "5pSv5oyB" },
-        { id: "q36", q: "恋物癖？", opts: ["有", "没有"], a: "5pyJ" },
-        { id: "q37", q: "你觉得30岁在人生中算早吗？", opts: ["早", "不早"], a: "5pep" },
-        { id: "q38", q: "你已经济独立了吗？", opts: ["已独立", "暂未"], a: "5pqC5pyq" },
-        { id: "q39", q: "你属于高敏感人群吗？", opts: ["是", "否"], a: "5piv" },
-        { id: "q40", q: "对社会学，心理学或语言学感兴趣吗？", opts: ["是", "否"], a: "5piv" }
-    ];
+    const qData = [
+        { id: "q1", q: "奥利奥还是趣多多？", opts: ["奥利奥", "趣多多"], a: "6Laj5aSa5aSa" },
+        { id: "q2", q: "穿三角还是平角？", opts: ["三角", "平角"], a: "5LiJ6KeS" },
+        { id: "q3", q: "Gemini 还是 DeepSeek？", opts: ["Gemini", "DeepSeek"], a: "R2VtaW5p" },
+        { id: "q4", q: "喜欢猫还是狗？", opts: ["猫", "狗"], a: "54uX" },
+        { id: "q5", q: "冬天还是夏天？", opts: ["冬天", "夏天"], a: "5aSP5aSp" },
+        { id: "q6", q: "薯条蘸番茄酱吗？", opts: ["会", "不会"], a: "5Lya" }, 
+        { id: "q7", q: "出门带不带充电宝？", opts: ["带", "不带"], a: "5bim" },
+        { id: "q8", q: "背包里会不会备有试纸？", opts: ["会", "不会"], a: "5Lya" },
+        { id: "q9", q: "早睡早起还是经常熬夜？", opts: ["早睡早起", "经常熬夜"], a: "5pep552h5pep6LW3" },
+        { id: "q10", q: "无纸化学习？", opts: ["是", "否"], a: "5ZCm" },
+        { id: "q11", q: "秒回消息还是准备好再回？", opts: ["秒回", "准备好"], a: "5YeG5aSH5aW9" },
+        { id: "q12", q: "喜欢看日出还是日落？", opts: ["日出", "日落"], a: "5pel5Ye6" },
+        { id: "q13", q: "Lady Gaga 还是 Taylor Swift？", opts: ["Lady Gaga", "Taylor Swift"], a: "TGFkeSBHYWdh" },
+        { id: "q14", q: "库迪还是瑞幸？", opts: ["库迪", "瑞幸"], a: "5bqT6L+q" },
+        { id: "q15", q: "吃不吃香菜？", opts: ["吃", "不吃"], a: "5ZCD" },
+        { id: "q16", q: "喜欢拍风景还是人像？", opts: ["风景", "人像"], a: "5Lq65YOP" },
+        { id: "q17", q: "旅行提前计划还是随时出发？", opts: ["提前计划", "随时出发"], a: "5o+Q5YmN6K6h5YiS" },
+        { id: "q18", q: "手机带壳吗？", opts: ["带", "不带"], a: "5bim" },
+        { id: "q19", q: "手冲咖啡还是意式？", opts: ["手冲", "意式"], a: "5oSP5byP" },
+        { id: "q20", q: "EDM 还是 Jazz？", opts: ["EDM", "Jazz"], a: "RURN" },
+        { id: "q21", q: "抒情流行还是摇滚？", opts: ["流行", "摇滚"], a: "5rWB6KGM" },
+        { id: "q22", q: "耐克还是安德玛？", opts: ["耐克", "安德玛"], a: "5a6J5b63546b" },
+        { id: "q23", q: "破产姐妹or绝命毒师？", opts: ["破产姐妹", "绝命毒师"], a: "56C05Lqn5aeQ5aa5" }, 
+        { id: "q24", q: "黑色还是白色？", opts: ["黑色", "白色"], a: "6buR6Imy" }, 
+        { id: "q25", q: "谈过女朋友吗？", opts: ["有", "否"], a: "5ZCm" },
+        { id: "q26", q: "旅行更在意吃还是住？", opts: ["吃", "住"], a: "5ZCD" },
+        { id: "q27", q: "陈奕迅还是卫兰？", opts: ["陈奕迅", "卫兰"], a: "5Y2r5YWw" },
+        { id: "q28", q: "以后还有可能养宠物吗？", opts: ["会", "不会"], a: "5Lya" },
+        { id: "q29", q: "相信神秘学吗？", opts: ["相信", "不相信"], a: "55u45L+h" },
+        { id: "q30", q: "相信风水学吗？", opts: ["相信", "不相信"], a: "55u45L+h" },
+        { id: "q31", q: "会以交友为主要目的而旅行吗？", opts: ["会", "不会"], a: "5Lya" },
+        { id: "q32", q: "旅行更喜欢Solo还是组队？", opts: ["Solo", "组队"], a: "U29sbw==" },
+        { id: "q33", q: "起飞时更倾向 X 还是电报？", opts: ["X", "电报"], a: "WA==" },
+        { id: "q34", q: "支持考研还是考公？", opts: ["考研", "考公"], a: "6ICD56CU" },
+        { id: "q35", q: "支持动保？", opts: ["支持", "不支持"], a: "5pSv5oyB" },
+        { id: "q36", q: "恋物癖？", opts: ["有", "没有"], a: "5pyJ" },
+        { id: "q37", q: "你觉得30岁在人生中算早吗？", opts: ["早", "不早"], a: "5pep" },
+        { id: "q38", q: "你已经济独立了吗？", opts: ["已独立", "暂未"], a: "5pqC5pyq" },
+        { id: "q39", q: "你属于高敏感人群吗？", opts: ["是", "否"], a: "5piv" },
+        { id: "q40", q: "对社会学，心理学或语言学感兴趣吗？", opts: ["是", "否"], a: "5piv" }
+    ];
 
-    let currentSet = [];
-    let finalScore = 0; 
+    let currentSet = [];
+    let finalScore = 0; 
 
-    window.onload = function() {
-        const savedUserId = localStorage.getItem('quiz_user_id');
-        if (savedUserId) {
-            document.getElementById('user-id').value = savedUserId;
-        }
-        loadRanking();
-    };
+    window.onload = function() {
+        const savedUserId = localStorage.getItem('quiz_user_id');
+        if (savedUserId) {
+            document.getElementById('user-id').value = savedUserId;
+        }
+        loadRanking();
+    };
 
-    function safeAtob(str) {
-        try {
-            return decodeURIComponent(escape(window.atob(str))).trim(); 
-        } catch (e) {
-            return window.atob(str).trim();
-        }
-    }
+    function safeAtob(str) {
+        try {
+            return decodeURIComponent(escape(window.atob(str))).trim(); 
+        } catch (e) {
+            return window.atob(str).trim();
+        }
+    }
 
-    function startQuiz(mode) {
-        const id = document.getElementById('user-id').value;
-        if (!id.trim()) { 
-            alert("必须输入 ID 才能开始哦"); 
-            return; 
-        }
-        localStorage.setItem('quiz_user_id', id);
-        
-        document.getElementById('top-title').innerText = "加载中...";
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('quiz-section').classList.remove('hidden');
+    function startQuiz(mode) {
+        const id = document.getElementById('user-id').value;
+        if (!id.trim()) { 
+            alert("必须输入 ID 才能开始哦"); 
+            return; 
+        }
+        localStorage.setItem('quiz_user_id', id);
+        
+        document.getElementById('top-title').innerText = "加载中...";
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('quiz-section').classList.remove('hidden');
 
-        let shuffled = [...qData].sort(() => Math.random() - 0.5);
-        currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
-        renderQuestions();
-    }
+        let shuffled = [...qData].sort(() => Math.random() - 0.5);
+        currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
+        renderQuestions();
+    }
 
-    function renderQuestions() {
-        const container = document.getElementById('questions-container');
-        container.innerHTML = "";
-        currentSet.forEach((item, i) => {
-            const card = document.createElement('div');
-            card.className = 'question-card';
-            card.innerHTML = `
-                <div class="question-text">${i+1}. ${item.q}</div>
-                <div class="options">
-                    ${item.opts.map(o => `<label><input type="radio" name="${item.id}" value="${o.trim()}"> ${o}</label>`).join('')}
-                </div>
-            `;
-            container.appendChild(card);
-        });
-        window.scrollTo(0, 0);
-        document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
-    }
+    function renderQuestions() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = "";
+        currentSet.forEach((item, i) => {
+            const card = document.createElement('div');
+            card.className = 'question-card';
+            card.innerHTML = `
+                <div class="question-text">${i+1}. ${item.q}</div>
+                <div class="options">
+                    ${item.opts.map(o => `<label><input type="radio" name="${item.id}" value="${o.trim()}"> ${o}</label>`).join('')}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+        window.scrollTo(0, 0);
+        document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
+    }
 
-    function calculateScore() {
-        let scoreCount = 0;
-        let answeredCount = 0;
-        
-        currentSet.forEach(item => {
-            const sel = document.querySelector(`input[name="${item.id}"]:checked`);
-            if (sel) {
-                answeredCount++;
-                if (sel.value === safeAtob(item.a)) {
-                    scoreCount++;
-                }
-            }
-        });
+    function calculateScore() {
+        let scoreCount = 0;
+        let answeredCount = 0;
+        
+        currentSet.forEach(item => {
+            const sel = document.querySelector(`input[name="${item.id}"]:checked`);
+            if (sel) {
+                answeredCount++;
+                if (sel.value === safeAtob(item.a)) {
+                    scoreCount++;
+                }
+            }
+        });
 
-        if (answeredCount < currentSet.length) { 
-            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
-            return; 
-        }
+        if (answeredCount < currentSet.length) { 
+            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
+            return; 
+        }
 
-        finalScore = Math.round((scoreCount / currentSet.length) * 100);
-        showResult(finalScore);
-    }
+        finalScore = Math.round((scoreCount / currentSet.length) * 100);
+        showResult(finalScore);
+    }
 
-    function showResult(s) {
-        document.getElementById('quiz-section').classList.add('hidden');
-        document.getElementById('result').style.display = 'block';
-        
-        const circle = document.getElementById('score-display');
-        const text = document.getElementById('result-text');
-        const userId = document.getElementById('user-id').value;
-        
-        // 关键修正：自动同步 ID 到排行榜输入框
-        document.getElementById('rank-user-id').value = userId;
-        
-        circle.innerText = s + "%";
-        
-        if (s >= 80) {
-            circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
-            text.innerText = `${userId}，我们是天造地设的姐妹。`;
-        } else if (s >= 60) {
-            circle.style.borderColor = "var(--google-green)"; circle.style.color = "var(--google-green)";
-            text.innerText = `${userId}，或许我有跟你聊过我的性癖好。当然，你现在也能问。`;
-        } else if (s >= 35) {
-            circle.style.borderColor = "var(--google-yellow)"; circle.style.color = "var(--google-yellow)";
-            text.innerText = `${userId}，我们可能有些不同爱好。如果你有兴趣，我们可以聊聊。`;
-        } else {
-            circle.style.borderColor = "var(--google-red)"; circle.style.color = "var(--google-red)";
-            text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
-        }
+    function showResult(s) {
+        document.getElementById('quiz-section').classList.add('hidden');
+        document.getElementById('result').style.display = 'block';
+        
+        const circle = document.getElementById('score-display');
+        const text = document.getElementById('result-text');
+        const userId = document.getElementById('user-id').value;
+        
+        // 关键修正：自动同步 ID 到排行榜输入框
+        document.getElementById('rank-user-id').value = userId;
+        
+        circle.innerText = s + "%";
+        
+        if (s >= 80) {
+            circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
+            text.innerText = `${userId}，我们是天造地设的姐妹。`;
+        } else if (s >= 60) {
+            circle.style.borderColor = "var(--google-green)"; circle.style.color = "var(--google-green)";
+            text.innerText = `${userId}，或许我有跟你聊过我的性癖好。当然，你现在也能问。`;
+        } else if (s >= 35) {
+            circle.style.borderColor = "var(--google-yellow)"; circle.style.color = "var(--google-yellow)";
+            text.innerText = `${userId}，我们可能有些不同爱好。如果你有兴趣，我们可以聊聊。`;
+        } else {
+            circle.style.borderColor = "var(--google-red)"; circle.style.color = "var(--google-red)";
+            text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
+        }
 
-        loadRanking();
-    }
+        loadRanking();
+    }
 
-    function showRankingDirectly() {
-        document.getElementById('auth-section').classList.add('hidden');
-        document.getElementById('result').style.display = 'block';
-        document.getElementById('result-title').innerText = "实时分数排行榜";
-        document.getElementById('score-display').innerText = "🏆";
-        document.getElementById('score-display').style.borderColor = "var(--google-yellow)";
-        document.getElementById('score-display').style.color = "var(--google-yellow)";
-        document.getElementById('result-text').innerText = "come on";
-        loadRanking();
-    }
+    function showRankingDirectly() {
+        document.getElementById('auth-section').classList.add('hidden');
+        document.getElementById('result').style.display = 'block';
+        document.getElementById('result-title').innerText = "实时分数排行榜";
+        document.getElementById('score-display').innerText = "🏆";
+        document.getElementById('score-display').style.borderColor = "var(--google-yellow)";
+        document.getElementById('score-display').style.color = "var(--google-yellow)";
+        document.getElementById('result-text').innerText = "快来参与答题，上榜赢取默契值～";
+        loadRanking();
+    }
 
-    function submitToRanking() {
-        const rankUserId = document.getElementById('rank-user-id').value;
-        const btn = document.getElementById('submit-rank-btn');
+    function submitToRanking() {
+        const rankUserId = document.getElementById('rank-user-id').value;
+        const btn = document.getElementById('submit-rank-btn');
 
-        if (!rankUserId) {
-            alert("请输入ID再上榜！");
-            return;
-        }
+        if (!rankUserId) {
+            alert("请输入ID再上榜！");
+            return;
+        }
 
-        btn.disabled = true;
-        btn.innerText = "提交中...";
+        btn.disabled = true;
+        btn.innerText = "提交中...";
 
-        fetch(`${API_BASE}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: rankUserId, score: finalScore })
-        }).then(response => {
-            if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
-            return response.json();
-        }).then(data => {
-            if (data.success) {
-                alert("分数上榜成功！");
-                loadRanking();
-            } else {
-                alert("分数上榜失败：" + (data.error || "未知错误"));
-            }
-        }).catch(err => {
-            console.error("排行榜提交失败：", err);
-            alert("分数上榜失败，请检查网络或稍后再试～");
-        }).finally(() => {
-            btn.disabled = false;
-            btn.innerText = "分数上榜";
-        });
-    }
+        fetch(`${API_BASE}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: rankUserId, score: finalScore })
+        }).then(response => {
+            if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
+            return response.json();
+        }).then(data => {
+            if (data.success) {
+                alert("分数上榜成功！");
+                loadRanking();
+            } else {
+                alert("分数上榜失败：" + (data.error || "未知错误"));
+            }
+        }).catch(err => {
+            console.error("排行榜提交失败：", err);
+            alert("分数上榜失败，请检查网络或稍后再试～");
+        }).finally(() => {
+            btn.disabled = false;
+            btn.innerText = "分数上榜";
+        });
+    }
 
-    function loadRanking() {
-        fetch(`${API_BASE}/ranking`)
-            .then(res => {
-                if (!res.ok) throw new Error(`接口错误：${res.status}`);
-                return res.json();
-            })
-            .then(data => {
-                let html = '';
-                if (!Array.isArray(data) || data.length === 0) {
-                    html = "<p>暂无上榜分数</p>";
-                } else {
-                    data.forEach((item, i) => {
-                        html += `<p style="margin: 8px 0; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">
-                            <strong>${i+1}.</strong> ${item.user_id} — <span style="color:var(--google-blue)">${item.score}分</span>
-                        </p>`;
-                    });
-                }
-                document.getElementById('rank_list').innerHTML = html;
-            }).catch(err => {
-                console.error("排行榜加载失败：", err);
-                document.getElementById('rank_list').innerHTML = `<p style="color:red">加载失败，请刷新页面～</p>`;
-            });
-    }
+    function loadRanking() {
+        fetch(`${API_BASE}/ranking`)
+            .then(res => {
+                if (!res.ok) throw new Error(`接口错误：${res.status}`);
+                return res.json();
+            })
+            .then(data => {
+                let html = '';
+                if (!Array.isArray(data) || data.length === 0) {
+                    html = "<p>暂无上榜分数，快来成为第一个吧！</p>";
+                } else {
+                    data.forEach((item, i) => {
+                        html += `<p style="margin: 8px 0; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">
+                            <strong>${i+1}.</strong> ${item.user_id} — <span style="color:var(--google-blue)">${item.score}分</span>
+                        </p>`;
+                    });
+                }
+                document.getElementById('rank_list').innerHTML = html;
+            }).catch(err => {
+                console.error("排行榜加载失败：", err);
+                document.getElementById('rank_list').innerHTML = `<p style="color:red">加载失败，请刷新页面～</p>`;
+            });
+    }
 
-    window.yours = function() {
-        if (currentSet.length === 0) return "❌ 尚未开始";
-        currentSet.forEach(item => {
-            const correctVal = safeAtob(item.a);
-            const radios = document.querySelectorAll(`input[name="${item.id}"]`);
-            radios.forEach(r => {
-                if (r.value.trim() === correctVal) r.checked = true;
-            });
-        });
-        alert("🥵 以下是我的答案。");
-        return "✅ Done";
-    };
+    window.yours = function() {
+        if (currentSet.length === 0) return "❌ 尚未开始";
+        currentSet.forEach(item => {
+            const correctVal = safeAtob(item.a);
+            const radios = document.querySelectorAll(`input[name="${item.id}"]`);
+            radios.forEach(r => {
+                if (r.value.trim() === correctVal) r.checked = true;
+            });
+        });
+        alert("🥵 注入成功！这下全对了。");
+        return "✅ Done";
+    };
 </script>
 </body>
 </html>
