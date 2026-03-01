@@ -50,6 +50,7 @@
         .btn-blue { background: var(--google-blue); color: white; }
         .btn-outline { background: white; border: 1px solid #dadce0; color: #5f6368; }
         .btn:hover { box-shadow: 0 4px 8px rgba(0,0,0,0.1); transform: translateY(-1px); }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
 
         .question-card {
             border: 1px solid #dadce0; border-radius: 8px; padding: 22px; margin-bottom: 18px;
@@ -72,7 +73,6 @@
         .rank-section { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
         .hidden { display: none; }
         
-        /* 新增：查看排行榜按钮样式 */
         .rank-btn-container {
             text-align: center;
             margin-top: 20px;
@@ -86,20 +86,17 @@
 <div class="container">
     <h1 id="top-title"> 大帝的默契度问答🥵 </h1>
 
-    <!-- 开始测试区域 -->
     <div id="auth-section">
         <input type="text" id="user-id" class="input-field" placeholder="输入 ID 以开始..." onkeydown="if(event.key==='Enter')startQuiz('full')">
         <div class="btn-group">
             <button class="btn btn-outline" onclick="startQuiz('brief')">简略版 (20题)</button>
             <button class="btn btn-blue" onclick="startQuiz('full')">完整版 (40题)</button>
         </div>
-        <!-- 新增：查看排行榜按钮 -->
         <div class="rank-btn-container">
             <button class="btn btn-outline" onclick="showRankingDirectly()">查看排行榜</button>
         </div>
     </div>
 
-    <!-- 问卷答题区域 -->
     <div id="quiz-section" class="hidden">
         <form id="quiz-form">
             <div id="questions-container"></div>
@@ -107,39 +104,37 @@
         </form>
     </div>
 
-    <!-- 结果展示区域（包含排行榜） -->
     <div id="result">
         <h2 id="result-title"> 你跟大帝的相似度大概有这么多... </h2>
         <div class="score-circle" id="score-display">0%</div>
         <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
         
-        <!-- 排行榜区域：放在result里面，提交后才显示 -->
         <div class="rank-section">
             <h3>🏆 实时分数排行榜</h3>
             <input 
                 type="text" 
                 id="rank-user-id" 
                 placeholder="输入你的ID，将分数上榜"
-                style="padding: 8px; width: 200px; margin: 10px 0;"
+                style="padding: 8px; width: 200px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
             >
-            <button class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
-            <div id="rank_list"></div>
+            <button id="submit-rank-btn" class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
+            <div id="rank_list">正在加载排行榜...</div>
         </div>
 
-        <!-- 邮箱区域 -->
         <div class="email-box">
             <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
             <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
             <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
         </div>
         
-        <!-- 重新测试按钮 -->
         <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
     </div>
 </div>
 
 <script> 
-    // 问卷数据
+    // 配置：你的后端 Render 地址
+    const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
+
     const qData = [
         { id: "q1", q: "奥利奥还是趣多多？", opts: ["奥利奥", "趣多多"], a: "6Laj5aSa5aSa" },
         { id: "q2", q: "穿三角还是平角？", opts: ["三角", "平角"], a: "5LiJ6KeS" },
@@ -183,22 +178,17 @@
         { id: "q40", q: "对社会学，心理学或语言学感兴趣吗？", opts: ["是", "否"], a: "5piv" }
     ];
 
-    // 全局变量：当前问卷题目、最终分数
     let currentSet = [];
     let finalScore = 0; 
 
-    // 页面加载时执行：恢复ID+自动加载排行榜
     window.onload = function() {
-        // 恢复上次输入的ID
         const savedUserId = localStorage.getItem('quiz_user_id');
         if (savedUserId) {
             document.getElementById('user-id').value = savedUserId;
         }
-        // 预加载排行榜数据（为「查看排行榜」按钮做准备）
         loadRanking();
     };
 
-    // Base64解码修复函数
     function safeAtob(str) {
         try {
             return decodeURIComponent(escape(window.atob(str))).trim(); 
@@ -207,27 +197,23 @@
         }
     }
 
-    // 开始测试函数（新增：保存ID到本地）
     function startQuiz(mode) {
         const id = document.getElementById('user-id').value;
         if (!id.trim()) { 
             alert("必须输入 ID 才能开始哦"); 
             return; 
         }
-        // 保存ID到本地存储，刷新不丢失
         localStorage.setItem('quiz_user_id', id);
         
         document.getElementById('top-title').innerText = "加载中...";
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('quiz-section').classList.remove('hidden');
 
-        // 随机打乱题目
         let shuffled = [...qData].sort(() => Math.random() - 0.5);
         currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
         renderQuestions();
     }
 
-    // 渲染题目函数
     function renderQuestions() {
         const container = document.getElementById('questions-container');
         container.innerHTML = "";
@@ -246,12 +232,10 @@
         document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
     }
 
-    // 计算分数函数
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
         
-        // 统计答对的题目数
         currentSet.forEach(item => {
             const sel = document.querySelector(`input[name="${item.id}"]:checked`);
             if (sel) {
@@ -262,111 +246,95 @@
             }
         });
 
-        // 检查是否答完所有题
         if (answeredCount < currentSet.length) { 
             alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
             return; 
         }
 
-        // 计算最终分数并保存到全局
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
         showResult(finalScore);
     }
 
-    // 显示结果函数
     function showResult(s) {
-        // 隐藏答题区，显示结果区
         document.getElementById('quiz-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
         
-        // 更新分数和评价
         const circle = document.getElementById('score-display');
         const text = document.getElementById('result-text');
         const userId = document.getElementById('user-id').value;
-        circle.innerText = s + "%";
-        function showResult(s) {
-    // ... 原有代码 ...
-    
-    // 【新增建议】自动把开始时的 ID 填到排行榜上榜框里
-    const startId = document.getElementById('user-id').value;
-    document.getElementById('rank-user-id').value = startId;
-
-    loadRanking();
-}
         
-        // 根据分数显示不同评价
+        // 关键修正：自动同步 ID 到排行榜输入框
+        document.getElementById('rank-user-id').value = userId;
+        
+        circle.innerText = s + "%";
+        
         if (s >= 80) {
-            circle.style.borderColor = "var(--google-blue)"; 
-            circle.style.color = "var(--google-blue)";
+            circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
             text.innerText = `${userId}，我们是天造地设的姐妹。`;
         } else if (s >= 60) {
-            circle.style.borderColor = "var(--google-green)"; 
-            circle.style.color = "var(--google-green)";
+            circle.style.borderColor = "var(--google-green)"; circle.style.color = "var(--google-green)";
             text.innerText = `${userId}，或许我有跟你聊过我的性癖好。当然，你现在也能问。`;
         } else if (s >= 35) {
-            circle.style.borderColor = "var(--google-yellow)"; 
-            circle.style.color = "var(--google-yellow)";
+            circle.style.borderColor = "var(--google-yellow)"; circle.style.color = "var(--google-yellow)";
             text.innerText = `${userId}，我们可能有些不同爱好。如果你有兴趣，我们可以聊聊。`;
         } else {
-            circle.style.borderColor = "var(--google-red)"; 
-            circle.style.color = "var(--google-red)";
+            circle.style.borderColor = "var(--google-red)"; circle.style.color = "var(--google-red)";
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
 
-        // 加载排行榜
         loadRanking();
     }
 
-    // 新增：直接查看排行榜（不用答题）
     function showRankingDirectly() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
-        // 修改标题和提示
         document.getElementById('result-title').innerText = "实时分数排行榜";
         document.getElementById('score-display').innerText = "🏆";
         document.getElementById('score-display').style.borderColor = "var(--google-yellow)";
         document.getElementById('score-display').style.color = "var(--google-yellow)";
         document.getElementById('result-text').innerText = "快来参与答题，上榜赢取默契值～";
-        // 加载排行榜数据
         loadRanking();
     }
 
-    // 提交分数到排行榜函数（优化错误提示）
     function submitToRanking() {
         const rankUserId = document.getElementById('rank-user-id').value;
+        const btn = document.getElementById('submit-rank-btn');
+
         if (!rankUserId) {
             alert("请输入ID再上榜！");
             return;
         }
 
-        // 发送分数到后端
-        fetch('https://da-di-quizhou-duan.onrender.com/submit', {
+        btn.disabled = true;
+        btn.innerText = "提交中...";
+
+        fetch(`${API_BASE}/submit`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: rankUserId, score: finalScore })
         }).then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP错误：${response.status}`);
-            }
+            if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
             return response.json();
         }).then(data => {
             if (data.success) {
                 alert("分数上榜成功！");
-                loadRanking(); // 刷新排行榜
+                loadRanking();
             } else {
                 alert("分数上榜失败：" + (data.error || "未知错误"));
             }
         }).catch(err => {
-            console.log("排行榜提交失败：", err);
-            alert("分数上榜失败：" + err.message + "，请检查网络或稍后再试～");
+            console.error("排行榜提交失败：", err);
+            alert("分数上榜失败，请检查网络或稍后再试～");
+        }).finally(() => {
+            btn.disabled = false;
+            btn.innerText = "分数上榜";
         });
     }
 
-    // 加载排行榜函数
     function loadRanking() {
-        fetch('https://da-di-quizhou-duan.onrender.com/ranking')
+        fetch(`${API_BASE}/ranking`)
             .then(res => {
-                if (!res.ok) throw new Error(`排行榜接口返回错误：${res.status}`);
+                if (!res.ok) throw new Error(`接口错误：${res.status}`);
                 return res.json();
             })
             .then(data => {
@@ -375,17 +343,18 @@
                     html = "<p>暂无上榜分数，快来成为第一个吧！</p>";
                 } else {
                     data.forEach((item, i) => {
-                        html += `<p>${i+1}. ${item.user_id || '匿名用户'} — ${item.score || 0}分</p>`;
+                        html += `<p style="margin: 8px 0; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">
+                            <strong>${i+1}.</strong> ${item.user_id} — <span style="color:var(--google-blue)">${item.score}分</span>
+                        </p>`;
                     });
                 }
                 document.getElementById('rank_list').innerHTML = html;
             }).catch(err => {
-                console.log("排行榜加载失败：", err);
-                document.getElementById('rank_list').innerHTML = `<p>排行榜加载失败：${err.message}～</p>`;
+                console.error("排行榜加载失败：", err);
+                document.getElementById('rank_list').innerHTML = `<p style="color:red">加载失败，请刷新页面～</p>`;
             });
     }
 
-    // 彩蛋函数：一键选对所有答案
     window.yours = function() {
         if (currentSet.length === 0) return "❌ 尚未开始";
         currentSet.forEach(item => {
@@ -401,4 +370,3 @@
 </script>
 </body>
 </html>
-
