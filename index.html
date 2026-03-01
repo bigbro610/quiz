@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>大帝的默契度问答</title>
+    <title>大帝的默契度问答🥵</title>
     <style>
         :root {
             --google-blue: #4285f4;
@@ -69,6 +69,7 @@
         }
 
         .email-box { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
+        .rank-section { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
         .hidden { display: none; }
     </style>
 </head>
@@ -91,22 +92,6 @@
         <form id="quiz-form">
             <div id="questions-container"></div>
             <button type="button" class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="calculateScore()">提交我的答案</button>
-            
-            <!-- 用户输ID的输入框（用于上榜） -->
-            <div style="margin: 20px 0;">
-              <input 
-                type="text" 
-                id="rank-user-id" 
-                placeholder="请输入你的ID（用于上榜）"
-                style="padding: 8px; width: 200px;"
-              >
-            </div>
-
-            <!-- 排行榜展示区域 -->
-            <div id="ranking" style="margin-top: 30px;">
-              <h3>🏆 实时分数排行榜</h3>
-              <div id="rank_list"></div>
-            </div>
         </form>
     </div>
 
@@ -115,6 +100,19 @@
         <div class="score-circle" id="score-display">0%</div>
         <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
         
+        <!-- 排行榜和上榜ID移到结果页 -->
+        <div class="rank-section">
+            <h3>🏆 实时分数排行榜</h3>
+            <input 
+                type="text" 
+                id="rank-user-id" 
+                placeholder="输入你的ID，将分数上榜"
+                style="padding: 8px; width: 200px; margin: 10px 0;"
+            >
+            <button class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
+            <div id="rank_list"></div>
+        </div>
+
         <div class="email-box">
             <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
             <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
@@ -169,6 +167,7 @@
     ];
 
     let currentSet = [];
+    let finalScore = 0; // 全局保存最终分数，方便上榜使用
 
     // 修复Base64解码函数
     function safeAtob(str) {
@@ -179,7 +178,7 @@
         }
     }
 
-    // 开始测试函数（恢复正常）
+    // 开始测试函数
     function startQuiz(mode) {
         const id = document.getElementById('user-id').value;
         if (!id.trim()) { alert("必须输入 ID 才能开始哦"); return; }
@@ -190,8 +189,6 @@
         let shuffled = [...qData].sort(() => Math.random() - 0.5);
         currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
         render();
-        // 打开问卷后自动加载排行榜
-        loadRanking();
     }
 
     // 渲染题目函数
@@ -213,7 +210,7 @@
         document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
     }
 
-    // 计算分数+提交排行榜函数（核心修复）
+    // 计算分数函数
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
@@ -232,38 +229,8 @@
             return; 
         }
 
-        const finalScore = Math.round((scoreCount / currentSet.length) * 100);
-        
-        // 1. 获取上榜用的ID
-        const rankUserId = document.getElementById('rank-user-id').value;
-        // 如果用户填了上榜ID，就提交到后端
-        if (rankUserId) {
-            fetch('https://da-di-quizhou-duan.onrender.com/submit', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: rankUserId, score: finalScore })
-            }).then(() => {
-                // 提交后刷新排行榜
-                loadRanking();
-            }).catch(err => {
-                console.log("排行榜提交失败：", err);
-                alert("分数上榜失败，但不影响结果展示～");
-            });
-        }
-
-        // 2. 原来的上报逻辑保留（不影响）
-        const payload = {
-            userId: document.getElementById('user-id').value,
-            score: finalScore + "%",
-            mode: currentSet.length === 20 ? "简略版" : "完整版"
-        };
-        fetch('https://da-di-quizhou-duan.onrender.com/submit-score', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).catch(error => console.error("上报失败:", error));
-
-        // 3. 显示结果
+        // 保存最终分数到全局变量
+        finalScore = Math.round((scoreCount / currentSet.length) * 100);
         showResult(finalScore);
     }
 
@@ -276,6 +243,7 @@
         const userId = document.getElementById('user-id').value;
         circle.innerText = s + "%";
         
+        // 渲染评价
         if (s >= 80) {
             circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
             text.innerText = `${userId}，我们是天造地设的姐妹。`;
@@ -289,9 +257,33 @@
             circle.style.borderColor = "var(--google-red)"; circle.style.color = "var(--google-red)";
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
+
+        // 显示结果后自动加载排行榜
+        loadRanking();
     }
 
-    // 加载排行榜函数（移到正确位置，仅在需要时执行）
+    // 提交分数到排行榜函数
+    function submitToRanking() {
+        const rankUserId = document.getElementById('rank-user-id').value;
+        if (!rankUserId) {
+            alert("请输入ID再上榜！");
+            return;
+        }
+
+        fetch('https://da-di-quizhou-duan.onrender.com/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: rankUserId, score: finalScore })
+        }).then(() => {
+            alert("分数上榜成功！");
+            loadRanking(); // 刷新排行榜
+        }).catch(err => {
+            console.log("排行榜提交失败：", err);
+            alert("分数上榜失败，请稍后再试～");
+        });
+    }
+
+    // 加载排行榜函数
     function loadRanking() {
         fetch('https://da-di-quizhou-duan.onrender.com/ranking')
             .then(res => res.json())
