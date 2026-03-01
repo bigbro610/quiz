@@ -93,6 +93,7 @@
             <button class="btn btn-blue" onclick="startQuiz('full')">完整版 (40题)</button>
         </div>
         <div class="rank-btn-container">
+            <!-- 恢复：不再禁用排行榜按钮，允许未答题用户查看 -->
             <button class="btn btn-outline" onclick="showRankingDirectly()">查看排行榜</button>
         </div>
     </div>
@@ -133,6 +134,7 @@
 
 <script> 
     // 彩蛋：yours()解锁答案
+    // 【关键检查】确认你的Render后端URL正确！
     const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
 
     const qData = [
@@ -180,11 +182,11 @@
 
     let currentSet = [];
     let finalScore = 0; 
+    let hasAnswered = false; // 仅用于标记是否答题（不限制排行榜查看）
 
-   window.onload = function() {
-    // 删掉了读取和赋值 quiz_user_id 的部分
-    loadRanking(); // 只保留加载排行榜
-};
+    window.onload = function() {
+        loadRanking(); // 页面加载就加载排行榜
+    };
 
     function safeAtob(str) {
         try {
@@ -229,6 +231,7 @@
         document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
     }
 
+    // 核心：修复数据提交逻辑，增加详细日志
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
@@ -249,49 +252,44 @@
         }
 
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
-        showResult(finalScore);
-    }function calculateScore() {
-        let scoreCount = 0;
-        let answeredCount = 0;
-        
-        currentSet.forEach(item => {
-            const sel = document.querySelector(`input[name="${item.id}"]:checked`);
-            if (sel) {
-                answeredCount++;
-                if (sel.value === safeAtob(item.a)) {
-                    scoreCount++;
-                }
-            }
-        });
+        hasAnswered = true; // 标记用户已答题
 
-        if (answeredCount < currentSet.length) { 
-            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
-            return; 
+        // 静默提交：仅后台记录（is_public=false）
+        const userId = localStorage.getItem('quiz_user_id');
+        if (userId) {
+            console.log("开始静默提交数据：", { user_id: userId, score: finalScore, is_public: false });
+            // 【关键修复】增加完整的请求错误处理，打印详细日志
+            fetch(`${API_BASE}/submit`, {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    // 解决跨域/预检请求问题
+                    'Access-Control-Allow-Origin': '*'
+                },
+                body: JSON.stringify({ 
+                    user_id: userId, 
+                    score: finalScore, 
+                    is_public: false 
+                }),
+                // 强制不缓存
+                cache: 'no-cache'
+            })
+            .then(res => {
+                console.log("响应状态：", res.status, res.statusText);
+                return res.json();
+            })
+            .then(data => {
+                console.log("静默提交成功：", data);
+                alert("答案提交成功！（后台已记录分数）");
+            })
+            .catch(err => {
+                console.error("静默提交失败：", err);
+                alert(`提交失败：${err.message}，请检查后端是否在线！`);
+            });
+        } else {
+            alert("用户ID丢失，请重新输入ID！");
         }
 
-        finalScore = Math.round((scoreCount / currentSet.length) * 100);
-
-        // 👇【这里是新增的代码：静默自动提交】👇
-        const userId = document.getElementById('user-id').value;
-        fetch(`${API_BASE}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: userId, score: finalScore })
-        }).catch(err => {
-            // 静默提交失败不弹窗，以免影响用户体验
-            console.log("后台自动记录失败:", err);
-        });
-        // 👆【新增结束】👆
-// 在 calculateScore 算完分的地方调用
-fetch(`${API_BASE}/submit`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ 
-        user_id: userId, 
-        score: finalScore, 
-        is_public: false // 👈 只是后台记录，不显示在榜单
-    })
-});
         showResult(finalScore);
     }
 
@@ -301,10 +299,9 @@ fetch(`${API_BASE}/submit`, {
         
         const circle = document.getElementById('score-display');
         const text = document.getElementById('result-text');
-        const userId = document.getElementById('user-id').value;
+        const userId = localStorage.getItem('quiz_user_id');
         
-        // 关键修正：自动同步 ID 到排行榜输入框
-        document.getElementById('rank-user-id').value = userId;
+        document.getElementById('rank-user-id').value = userId || '';
         
         circle.innerText = s + "%";
         
@@ -322,36 +319,10 @@ fetch(`${API_BASE}/submit`, {
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
 
-        loadRanking();function submitToRanking() {
-    const rankUserId = document.getElementById('rank-user-id').value;
-    const btn = document.getElementById('submit-rank-btn');
-
-    if (!rankUserId) { alert("请输入ID再上榜！"); return; }
-    if (finalScore === 0) { alert("不要0分"); return; }
-
-    btn.disabled = true;
-    btn.innerText = "提交中...";
-
-    fetch(`${API_BASE}/submit`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            user_id: rankUserId, 
-            score: finalScore, 
-            is_public: true  // 👈 明确标记为上榜
-        })
-    }).then(res => res.json()).then(data => {
-        if (data.success) {
-            alert("成功进入排行榜！");
-            loadRanking();
-        }
-    }).finally(() => {
-        btn.disabled = false;
-        btn.innerText = "分数上榜";
-    });
-}
+        loadRanking();
     }
 
+    // 恢复：允许未答题用户查看排行榜
     function showRankingDirectly() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
@@ -363,6 +334,7 @@ fetch(`${API_BASE}/submit`, {
         loadRanking();
     }
 
+    // 修复手动上榜功能，增加详细日志
     function submitToRanking() {
         const rankUserId = document.getElementById('rank-user-id').value;
         const btn = document.getElementById('submit-rank-btn');
@@ -371,40 +343,67 @@ fetch(`${API_BASE}/submit`, {
             alert("请输入ID再上榜！");
             return;
         }
+        if (finalScore === 0 && !hasAnswered) {
+            alert("未答题不能上榜哦！");
+            return;
+        }
+        if (finalScore === 0) {
+            alert("0分不能上榜哦！");
+            return;
+        }
 
         btn.disabled = true;
         btn.innerText = "提交中...";
 
+        console.log("开始手动上榜提交：", { user_id: rankUserId, score: finalScore, is_public: true });
         fetch(`${API_BASE}/submit`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: rankUserId, score: finalScore })
-        }).then(response => {
-            if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
-            return response.json();
-        }).then(data => {
+            headers: { 
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({ 
+                user_id: rankUserId, 
+                score: finalScore, 
+                is_public: true 
+            }),
+            cache: 'no-cache'
+        })
+        .then(res => {
+            console.log("上榜响应状态：", res.status, res.statusText);
+            return res.json();
+        })
+        .then(data => {
             if (data.success) {
-                alert("分数上榜成功！");
+                alert("成功进入排行榜！");
                 loadRanking();
             } else {
-                alert("分数上榜失败：" + (data.error || "未知错误"));
+                alert("上榜失败：" + (data.error || "未知错误"));
             }
-        }).catch(err => {
-            console.error("排行榜提交失败：", err);
-            alert("分数上榜失败，请检查网络或稍后再试～");
-        }).finally(() => {
+        })
+        .catch(err => {
+            console.error("上榜提交失败：", err);
+            alert(`上榜失败：${err.message}，请检查后端是否在线！`);
+        })
+        .finally(() => {
             btn.disabled = false;
             btn.innerText = "分数上榜";
         });
     }
 
     function loadRanking() {
-        fetch(`${API_BASE}/ranking`)
+        fetch(`${API_BASE}/ranking`, {
+            cache: 'no-cache',
+            headers: {
+                'Access-Control-Allow-Origin': '*'
+            }
+        })
             .then(res => {
                 if (!res.ok) throw new Error(`接口错误：${res.status}`);
                 return res.json();
             })
             .then(data => {
+                console.log("排行榜数据：", data);
                 let html = '';
                 if (!Array.isArray(data) || data.length === 0) {
                     html = "<p>暂无上榜分数</p>";
@@ -418,7 +417,7 @@ fetch(`${API_BASE}/submit`, {
                 document.getElementById('rank_list').innerHTML = html;
             }).catch(err => {
                 console.error("排行榜加载失败：", err);
-                document.getElementById('rank_list').innerHTML = `<p style="color:red">加载失败，请刷新页面～</p>`;
+                document.getElementById('rank_list').innerHTML = `<p style="color:red">加载失败：${err.message}</p>`;
             });
     }
 
