@@ -80,6 +80,7 @@
 <div class="container">
     <h1 id="top-title"> 大帝的默契度问答🥵 </h1>
 
+    <!-- 开始测试区域 -->
     <div id="auth-section">
         <input type="text" id="user-id" class="input-field" placeholder="输入 ID 以开始..." onkeydown="if(event.key==='Enter')startQuiz('full')">
         <div class="btn-group">
@@ -88,6 +89,7 @@
         </div>
     </div>
 
+    <!-- 问卷答题区域 -->
     <div id="quiz-section" class="hidden">
         <form id="quiz-form">
             <div id="questions-container"></div>
@@ -95,19 +97,13 @@
         </form>
     </div>
 
+    <!-- 结果展示区域（包含排行榜） -->
     <div id="result">
         <h2> 你跟大帝的相似度大概有这么多... </h2>
         <div class="score-circle" id="score-display">0%</div>
         <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
-
-        <div class="email-box">
-            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
-            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
-            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
-        </div>
-        <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
-    </div>
-</div><!-- 排行榜和上榜ID移到结果页 -->
+        
+        <!-- 排行榜区域：放在result里面，提交后才显示 -->
         <div class="rank-section">
             <h3>🏆 实时分数排行榜</h3>
             <input 
@@ -120,7 +116,20 @@
             <div id="rank_list"></div>
         </div>
 
+        <!-- 邮箱区域 -->
+        <div class="email-box">
+            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
+            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
+            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
+        </div>
+        
+        <!-- 重新测试按钮 -->
+        <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
+    </div>
+</div>
+
 <script> 
+    // 问卷数据
     const qData = [
         { id: "q1", q: "奥利奥还是趣多多？", opts: ["奥利奥", "趣多多"], a: "6Laj5aSa5aSa" },
         { id: "q2", q: "穿三角还是平角？", opts: ["三角", "平角"], a: "5LiJ6KeS" },
@@ -164,10 +173,11 @@
         { id: "q40", q: "对社会学，心理学或语言学感兴趣吗？", opts: ["是", "否"], a: "5piv" }
     ];
 
+    // 全局变量：当前问卷题目、最终分数
     let currentSet = [];
     let finalScore = 0; 
 
-    // 修复Base64解码函数
+    // Base64解码修复函数
     function safeAtob(str) {
         try {
             return decodeURIComponent(escape(window.atob(str))).trim(); 
@@ -179,18 +189,22 @@
     // 开始测试函数
     function startQuiz(mode) {
         const id = document.getElementById('user-id').value;
-        if (!id.trim()) { alert("必须输入 ID 才能开始哦"); return; }
+        if (!id.trim()) { 
+            alert("必须输入 ID 才能开始哦"); 
+            return; 
+        }
         document.getElementById('top-title').innerText = "加载中...";
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('quiz-section').classList.remove('hidden');
 
+        // 随机打乱题目
         let shuffled = [...qData].sort(() => Math.random() - 0.5);
         currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
-        render();
+        renderQuestions();
     }
 
     // 渲染题目函数
-    function render() {
+    function renderQuestions() {
         const container = document.getElementById('questions-container');
         container.innerHTML = "";
         currentSet.forEach((item, i) => {
@@ -212,6 +226,8 @@
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
+        
+        // 统计答对的题目数
         currentSet.forEach(item => {
             const sel = document.querySelector(`input[name="${item.id}"]:checked`);
             if (sel) {
@@ -222,41 +238,49 @@
             }
         });
 
+        // 检查是否答完所有题
         if (answeredCount < currentSet.length) { 
             alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
             return; 
         }
 
-        // 保存最终分数到全局变量
+        // 计算最终分数并保存到全局
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
         showResult(finalScore);
     }
 
     // 显示结果函数
     function showResult(s) {
+        // 隐藏答题区，显示结果区
         document.getElementById('quiz-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
+        
+        // 更新分数和评价
         const circle = document.getElementById('score-display');
         const text = document.getElementById('result-text');
         const userId = document.getElementById('user-id').value;
         circle.innerText = s + "%";
         
-        // 渲染评价
+        // 根据分数显示不同评价
         if (s >= 80) {
-            circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
+            circle.style.borderColor = "var(--google-blue)"; 
+            circle.style.color = "var(--google-blue)";
             text.innerText = `${userId}，我们是天造地设的姐妹。`;
         } else if (s >= 60) {
-            circle.style.borderColor = "var(--google-green)"; circle.style.color = "var(--google-green)";
+            circle.style.borderColor = "var(--google-green)"; 
+            circle.style.color = "var(--google-green)";
             text.innerText = `${userId}，或许我有跟你聊过我的性癖好。当然，你现在也能问。`;
         } else if (s >= 35) {
-            circle.style.borderColor = "var(--google-yellow)"; circle.style.color = "var(--google-yellow)";
+            circle.style.borderColor = "var(--google-yellow)"; 
+            circle.style.color = "var(--google-yellow)";
             text.innerText = `${userId}，我们可能有些不同爱好。如果你有兴趣，我们可以聊聊。`;
         } else {
-            circle.style.borderColor = "var(--google-red)"; circle.style.color = "var(--google-red)";
+            circle.style.borderColor = "var(--google-red)"; 
+            circle.style.color = "var(--google-red)";
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
 
-        // 显示结果后自动加载排行榜
+        // 加载排行榜
         loadRanking();
     }
 
@@ -268,16 +292,21 @@
             return;
         }
 
+        // 发送分数到后端
         fetch('https://da-di-quizhou-duan.onrender.com/submit', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ user_id: rankUserId, score: finalScore })
-        }).then(() => {
-            alert("分数上榜成功！");
-            loadRanking(); // 刷新排行榜
+        }).then(response => {
+            if (response.ok) {
+                alert("分数上榜成功！");
+                loadRanking(); // 刷新排行榜
+            } else {
+                alert("分数上榜失败，请稍后再试～");
+            }
         }).catch(err => {
             console.log("排行榜提交失败：", err);
-            alert("分数上榜失败，请稍后再试～");
+            alert("分数上榜失败，请检查网络或稍后再试～");
         });
     }
 
@@ -296,11 +325,12 @@
                 }
                 document.getElementById('rank_list').innerHTML = html;
             }).catch(err => {
+                console.log("排行榜加载失败：", err);
                 document.getElementById('rank_list').innerHTML = "<p>排行榜加载失败～</p>";
             });
     }
 
-    // 彩蛋函数
+    // 彩蛋函数：一键选对所有答案
     window.yours = function() {
         if (currentSet.length === 0) return "❌ 尚未开始";
         currentSet.forEach(item => {
