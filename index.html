@@ -282,7 +282,16 @@
             console.log("后台自动记录失败:", err);
         });
         // 👆【新增结束】👆
-
+// 在 calculateScore 算完分的地方调用
+fetch(`${API_BASE}/submit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+        user_id: userId, 
+        score: finalScore, 
+        is_public: false // 👈 只是后台记录，不显示在榜单
+    })
+});
         showResult(finalScore);
     }
 
@@ -313,7 +322,34 @@
             text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
         }
 
-        loadRanking();
+        loadRanking();function submitToRanking() {
+    const rankUserId = document.getElementById('rank-user-id').value;
+    const btn = document.getElementById('submit-rank-btn');
+
+    if (!rankUserId) { alert("请输入ID再上榜！"); return; }
+    if (finalScore === 0) { alert("不要0分"); return; }
+
+    btn.disabled = true;
+    btn.innerText = "提交中...";
+
+    fetch(`${API_BASE}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            user_id: rankUserId, 
+            score: finalScore, 
+            is_public: true  // 👈 明确标记为上榜
+        })
+    }).then(res => res.json()).then(data => {
+        if (data.success) {
+            alert("成功进入排行榜！");
+            loadRanking();
+        }
+    }).finally(() => {
+        btn.disabled = false;
+        btn.innerText = "分数上榜";
+    });
+}
     }
 
     function showRankingDirectly() {
