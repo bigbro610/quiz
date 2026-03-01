@@ -69,14 +69,10 @@
             font-size: 32px; font-weight: bold; margin: 30px auto; transition: 0.8s;
         }
 
-        .email-box { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
         .rank-section { margin-top: 30px; padding: 20px; background: #f1f3f4; border-radius: 8px; }
         .hidden { display: none; }
         
-        .rank-btn-container {
-            text-align: center;
-            margin-top: 20px;
-        }
+        .status-tag { font-size: 12px; color: #888; margin: 10px 0; font-style: italic; }
     </style>
 </head>
 <body>
@@ -92,47 +88,35 @@
             <button class="btn btn-outline" onclick="startQuiz('brief')">简略版 (20题)</button>
             <button class="btn btn-blue" onclick="startQuiz('full')">完整版 (40题)</button>
         </div>
-        <div class="rank-btn-container">
+        <div style="text-align: center; margin-top: 20px;">
             <button class="btn btn-outline" onclick="showRankingDirectly()">查看排行榜</button>
         </div>
     </div>
 
     <div id="quiz-section" class="hidden">
-        <form id="quiz-form">
-            <div id="questions-container"></div>
-            <button type="button" class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="calculateScore()">提交我的答案</button>
-        </form>
+        <div id="questions-container"></div>
+        <button type="button" class="btn btn-blue" style="width:100%; margin-top:20px;" onclick="calculateScore()">提交我的答案</button>
     </div>
 
     <div id="result">
-        <h2 id="result-title"> 你跟大帝的相似度大概有这么多... </h2>
+        <h2 id="result-title"> 测试结果 </h2>
         <div class="score-circle" id="score-display">0%</div>
         <p id="result-text" style="font-size: 18px; color: #3c4043; line-height: 1.6; padding: 0 10px;"></p>
         
+        <div id="sync-status" class="status-tag">正在同步数据到日志...</div>
+
         <div class="rank-section">
             <h3>🏆 实时分数排行榜</h3>
-            <input 
-                type="text" 
-                id="rank-user-id" 
-                placeholder="输入你的ID，将分数上榜"
-                style="padding: 8px; width: 200px; margin: 10px 0; border: 1px solid #ccc; border-radius: 4px;"
-            >
-            <button id="submit-rank-btn" class="btn btn-blue" style="margin-bottom: 15px;" onclick="submitToRanking()">分数上榜</button>
-            <div id="rank_list">正在加载排行榜...</div>
-        </div>
-
-        <div class="email-box">
-            <p style="font-size: 14px; margin-bottom: 10px;">要发送回答记录到自己的邮箱吗？</p>
-            <input type="email" id="user-email" class="input-field" placeholder="输入你的邮箱...">
-            <button class="btn btn-blue" onclick="alert('骗你的其实我没配服务器')">发送结果</button>
+            <input type="text" id="rank-user-id" placeholder="ID" style="padding: 8px; width: 120px; border: 1px solid #ccc; border-radius: 4px;">
+            <button id="submit-rank-btn" class="btn btn-blue" onclick="submitToRanking()">手动再次上榜</button>
+            <div id="rank_list" style="margin-top: 15px;">加载中...</div>
         </div>
         
         <button class="btn btn-outline" style="margin-top: 25px;" onclick="location.reload()">重新测试</button>
     </div>
 </div>
 
-<script> 
-    // 控制台输入yours（）查看我的答案
+<script>     // 彩蛋：输入yours()查看我的答案
     const API_BASE = "https://quiz-backend-1-lrmy.onrender.com";
 
     const qData = [
@@ -179,36 +163,27 @@
     ];
 
     let currentSet = [];
-    let finalScore = 0; 
+    let finalScore = 0;
 
     window.onload = function() {
-        const savedUserId = localStorage.getItem('quiz_user_id');
-        if (savedUserId) {
-            document.getElementById('user-id').value = savedUserId;
-        }
+        const savedId = localStorage.getItem('quiz_user_id');
+        if (savedId) document.getElementById('user-id').value = savedId;
         loadRanking();
     };
 
     function safeAtob(str) {
-        try {
-            return decodeURIComponent(escape(window.atob(str))).trim(); 
-        } catch (e) {
-            return window.atob(str).trim();
-        }
+        try { return decodeURIComponent(escape(window.atob(str))).trim(); } 
+        catch (e) { return window.atob(str).trim(); }
     }
 
     function startQuiz(mode) {
-        const id = document.getElementById('user-id').value;
-        if (!id.trim()) { 
-            alert("必须输入 ID 才能开始哦"); 
-            return; 
-        }
+        const id = document.getElementById('user-id').value.trim();
+        if (!id) { alert("输入id再开始吧🥵"); return; }
         localStorage.setItem('quiz_user_id', id);
         
-        document.getElementById('top-title').innerText = "加载中...";
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('quiz-section').classList.remove('hidden');
-
+        
         let shuffled = [...qData].sort(() => Math.random() - 0.5);
         currentSet = mode === 'brief' ? shuffled.slice(0, 20) : shuffled;
         renderQuestions();
@@ -216,22 +191,18 @@
 
     function renderQuestions() {
         const container = document.getElementById('questions-container');
-        container.innerHTML = "";
-        currentSet.forEach((item, i) => {
-            const card = document.createElement('div');
-            card.className = 'question-card';
-            card.innerHTML = `
+        container.innerHTML = currentSet.map((item, i) => `
+            <div class="question-card">
                 <div class="question-text">${i+1}. ${item.q}</div>
                 <div class="options">
                     ${item.opts.map(o => `<label><input type="radio" name="${item.id}" value="${o.trim()}"> ${o}</label>`).join('')}
                 </div>
-            `;
-            container.appendChild(card);
-        });
+            </div>
+        `).join('');
         window.scrollTo(0, 0);
-        document.getElementById('top-title').innerText = "大帝的默契度问答🥵";
     }
 
+    // 修改：计算分数后立即发起静默提交
     function calculateScore() {
         let scoreCount = 0;
         let answeredCount = 0;
@@ -240,134 +211,91 @@
             const sel = document.querySelector(`input[name="${item.id}"]:checked`);
             if (sel) {
                 answeredCount++;
-                if (sel.value === safeAtob(item.a)) {
-                    scoreCount++;
-                }
+                if (sel.value === safeAtob(item.a)) scoreCount++;
             }
         });
 
-        if (answeredCount < currentSet.length) { 
-            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`); 
-            return; 
+        if (answeredCount < currentSet.length) {
+            alert(`还有 ${currentSet.length - answeredCount} 道题没写完，不准跑！`);
+            return;
         }
 
         finalScore = Math.round((scoreCount / currentSet.length) * 100);
         showResult(finalScore);
+        
+        // --- 核心改动：自动同步数据 ---
+        const userId = document.getElementById('user-id').value;
+        autoSubmitData(userId, finalScore);
     }
 
     function showResult(s) {
         document.getElementById('quiz-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
+        document.getElementById('rank-user-id').value = document.getElementById('user-id').value;
         
         const circle = document.getElementById('score-display');
         const text = document.getElementById('result-text');
-        const userId = document.getElementById('user-id').value;
-        
-        // 关键修正：自动同步 ID 到排行榜输入框
-        document.getElementById('rank-user-id').value = userId;
-        
         circle.innerText = s + "%";
         
-        if (s >= 80) {
-            circle.style.borderColor = "var(--google-blue)"; circle.style.color = "var(--google-blue)";
-            text.innerText = `${userId}，我们是天造地设的姐妹。`;
-        } else if (s >= 60) {
-            circle.style.borderColor = "var(--google-green)"; circle.style.color = "var(--google-green)";
-            text.innerText = `${userId}，或许我有跟你聊过我的性癖好。当然，你现在也能问。`;
-        } else if (s >= 35) {
-            circle.style.borderColor = "var(--google-yellow)"; circle.style.color = "var(--google-yellow)";
-            text.innerText = `${userId}，我们可能有些不同爱好。如果你有兴趣，我们可以聊聊。`;
-        } else {
-            circle.style.borderColor = "var(--google-red)"; circle.style.color = "var(--google-red)";
-            text.innerText = `${userId}，你有很多见解与我不尽相同。这很有意思。`;
-        }
+        if (s >= 80) text.innerText = "我们是天造地设的姐妹。";
+        else if (s >= 60) text.innerText = "或许我有跟你聊过我的性癖好。";
+        else if (s >= 35) text.innerText = "我们有些不同爱好。";
+        else text.innerText = "你有很多见解与我不尽相同。";
+    }
 
-        loadRanking();
+    // 新增：静默上传函数，只要完卷就调用
+    function autoSubmitData(uid, score) {
+        console.log("📡 正在自动同步数据到后台...", { uid, score });
+        const status = document.getElementById('sync-status');
+        
+        fetch(`${API_BASE}/submit`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_id: uid, score: score })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                console.log("✅ 数据同步成功");
+                status.innerText = "数据已同步至日志 ✅";
+                loadRanking(); // 自动刷新排行榜
+            }
+        })
+        .catch(err => {
+            console.error("❌ 自动同步失败:", err);
+            status.innerText = "同步失败，请检查网络 ⚠️";
+        });
+    }
+
+    function submitToRanking() {
+        const rankUserId = document.getElementById('rank-user-id').value;
+        if (!rankUserId) { alert("ID 呢？"); return; }
+        autoSubmitData(rankUserId, finalScore); // 复用逻辑
+        alert("尝试手动重新提交中...");
+    }
+
+    function loadRanking() {
+        fetch(`${API_BASE}/ranking`)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById('rank_list');
+                if (!Array.isArray(data) || data.length === 0) {
+                    list.innerHTML = "暂无数据"; return;
+                }
+                list.innerHTML = data.map((item, i) => `
+                    <p style="border-bottom: 1px dashed #eee; padding: 5px 0;">
+                        ${i+1}. <b>${item.user_id}</b> — ${item.score}%
+                    </p>
+                `).join('');
+            })
+            .catch(e => console.error("排行加载失败", e));
     }
 
     function showRankingDirectly() {
         document.getElementById('auth-section').classList.add('hidden');
         document.getElementById('result').style.display = 'block';
-        document.getElementById('result-title').innerText = "实时分数排行榜";
-        document.getElementById('score-display').innerText = "🏆";
-        document.getElementById('score-display').style.borderColor = "var(--google-yellow)";
-        document.getElementById('score-display').style.color = "var(--google-yellow)";
-        document.getElementById('result-text').innerText = "come on";
         loadRanking();
     }
-
-    function submitToRanking() {
-        const rankUserId = document.getElementById('rank-user-id').value;
-        const btn = document.getElementById('submit-rank-btn');
-
-        if (!rankUserId) {
-            alert("请输入ID再上榜！");
-            return;
-        }
-
-        btn.disabled = true;
-        btn.innerText = "提交中...";
-
-        fetch(`${API_BASE}/submit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ user_id: rankUserId, score: finalScore })
-        }).then(response => {
-            if (!response.ok) throw new Error(`HTTP错误：${response.status}`);
-            return response.json();
-        }).then(data => {
-            if (data.success) {
-                alert("分数上榜成功！");
-                loadRanking();
-            } else {
-                alert("分数上榜失败：" + (data.error || "未知错误"));
-            }
-        }).catch(err => {
-            console.error("排行榜提交失败：", err);
-            alert("分数上榜失败，请检查网络或稍后再试～");
-        }).finally(() => {
-            btn.disabled = false;
-            btn.innerText = "分数上榜";
-        });
-    }
-
-    function loadRanking() {
-        fetch(`${API_BASE}/ranking`)
-            .then(res => {
-                if (!res.ok) throw new Error(`接口错误：${res.status}`);
-                return res.json();
-            })
-            .then(data => {
-                let html = '';
-                if (!Array.isArray(data) || data.length === 0) {
-                    html = "<p>暂无上榜分数，快来成为第一个吧！</p>";
-                } else {
-                    data.forEach((item, i) => {
-                        html += `<p style="margin: 8px 0; border-bottom: 1px dashed #ddd; padding-bottom: 4px;">
-                            <strong>${i+1}.</strong> ${item.user_id} — <span style="color:var(--google-blue)">${item.score}分</span>
-                        </p>`;
-                    });
-                }
-                document.getElementById('rank_list').innerHTML = html;
-            }).catch(err => {
-                console.error("排行榜加载失败：", err);
-                document.getElementById('rank_list').innerHTML = `<p style="color:red">加载失败，请刷新页面～</p>`;
-            });
-    }
-
-    window.yours = function() {
-        if (currentSet.length === 0) return "❌ 尚未开始";
-        currentSet.forEach(item => {
-            const correctVal = safeAtob(item.a);
-            const radios = document.querySelectorAll(`input[name="${item.id}"]`);
-            radios.forEach(r => {
-                if (r.value.trim() === correctVal) r.checked = true;
-            });
-        });
-        alert("🥵 以下是我的答案。");
-        return "✅ Done";
-    };
 </script>
 </body>
 </html>
-
